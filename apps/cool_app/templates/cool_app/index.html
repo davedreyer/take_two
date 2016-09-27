@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+</head>
+<body>
+	<h2>Welcome, {{ request.session.user.name }}!</h2>
+	<h2>{{ poker_count }} people poked you!</h2>
+	{% for poker in poker_data %}
+		{% for user in user_query %}
+			{% if user.id == poker.poker_id %}
+				<p>{{ user.name }} poked you {{ poker.total }} times!</p>
+			{% endif %}	
+		{% endfor %}
+	{% endfor %}	
+	<a href='{% url "authenticate:logout" %}'>Logout</a>
+
+	<h2>People you may want to poke:</h2> 
+
+	<table>
+		<tr>
+			<th>Name</th>
+			<th>Alias</th> 
+			<th>Email Address</th>
+			<th>Poke History</th>
+			<th>Action</th>
+		</tr>
+		{% for pokee in pokee_data %}
+			{% for user in user_query %}
+				{% if user.id == pokee.pokee__pokee_id %}
+					<tr>
+						<td>{{user.name}}</td>
+						<td>{{user.alias}}</td>
+						<td>{{user.email}}</td>
+						<td>{{pokee.total}}</td>
+						<td>
+							<form action='{% url "cool_app:poke" %}' method="POST">
+								{% csrf_token %}
+								<input type="hidden" value="{{user.id}}" name="pokee">
+								<input type="hidden" value="{{request.session.user.id}}" name="poker">
+								<input type="submit" value="Poke me!">
+							</form>
+						</td>
+					</tr>
+				{% endif %}	
+			{% endfor %} 	
+		{% endfor %} 
+
+		</table>
+
+</body>
+</html>
