@@ -19,19 +19,18 @@
 		{% csrf_token %}
 		<input type="hidden" name="process" value="registration">
 		Name: <input type="text" name="name"/>
-		Alias: <input type="text" name="alias"/>
-		Email: <input type="text" name="email"/>
+		Username: <input type="text" name="username"/>
 		Password: <input type="text" name="password"/>
 		*Password should be at least 8 characters and contain one letter and one number!
 		Password Confirm: <input type="text" name="confirm_password"/>
-		Date of Birth: <input type="date" name="birthdate"/>
+		Date Hired: <input type="date" name="hiredate"/>
 		*Format must be MM/DD/YYYY!
 		<input type="submit" value="Submit" />
 	</form>
 	<form action='{% url "authenticate:index" %}' method='POST'>
 		{% csrf_token %}
 		<input type="hidden" name="process" value="login">
-		Email: <input type="text" name="email"/>
+		Username: <input type="text" name="username"/>
 		Password: <input type="text" name="password"/>
 		<input type="submit" value="Submit" />
 	</form>

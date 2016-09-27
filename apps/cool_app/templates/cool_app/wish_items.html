@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+</head>
+<body>
+	{{ item.name }}
+	<h2>Users who added this product/item under their wish list.</h2>
+	{% for wisher in wishlist %}
+		<p>{{ wisher.wisher.name }}</p>
+	{% endfor %}
+</body>
+</html>

@@ -14,11 +14,10 @@ def index(request):
 				request.session['user'] = {
 			        'id' : check['new_user'].id,
 			        'name' : check['new_user'].name,
-			        'alias' : check['new_user'].alias,
-			        'email' : check['new_user'].email,
+			        'username' : check['new_user'].username,
 			    }
 				messages.success(request, "Success! Welcome {}!".format(request.session['user']['name']))
-				return redirect(reverse('cool_app:index'))	
+				return redirect(reverse('cool_app:dashboard'))	
 
 			else:
 				for x in check['errors']:
@@ -31,11 +30,10 @@ def index(request):
 				request.session['user'] = {
 			        'id' : check['user'].id,
 			        'name' : check['user'].name,
-			        'alias' : check['user'].alias,
-			        'email' : check['user'].email,
+			        'username' : check['user'].username,
 			    }
 				messages.success(request, "Hi {}! You successfully logged in!".format(request.session['user']['name']))
-				return redirect(reverse('cool_app:index'))
+				return redirect(reverse('cool_app:dashboard'))
 			else:
 				for x in check['errors']:
 					messages.error(request, x)

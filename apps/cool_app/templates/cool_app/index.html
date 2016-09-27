@@ -4,49 +4,56 @@
 	<title></title>
 </head>
 <body>
-	<h2>Welcome, {{ request.session.user.name }}!</h2>
-	<h2>{{ poker_count }} people poked you!</h2>
-	{% for poker in poker_data %}
-		{% for user in user_query %}
-			{% if user.id == poker.poker_id %}
-				<p>{{ user.name }} poked you {{ poker.total }} times!</p>
-			{% endif %}	
-		{% endfor %}
-	{% endfor %}	
+	{{ request.session.user.name }}
 	<a href='{% url "authenticate:logout" %}'>Logout</a>
-
-	<h2>People you may want to poke:</h2> 
-
+	{% if messages %}
+    	{% for message in messages %}
+    		<h2>{{ message }}</h2>
+    	{% endfor %}
+	{% endif %}
+	<h2>Your Wish List:</h2>
 	<table>
 		<tr>
-			<th>Name</th>
-			<th>Alias</th> 
-			<th>Email Address</th>
-			<th>Poke History</th>
+			<th>Item</th>
+			<th>Added by</th> 
+			<th>Date Added</th>
 			<th>Action</th>
 		</tr>
-		{% for pokee in pokee_data %}
-			{% for user in user_query %}
-				{% if user.id == pokee.pokee__pokee_id %}
+		{% for item in items_all %}
+			{% for index in wishlist %}
+				{% if item.id == index.wishitem_id %}
 					<tr>
-						<td>{{user.name}}</td>
-						<td>{{user.alias}}</td>
-						<td>{{user.email}}</td>
-						<td>{{pokee.total}}</td>
-						<td>
-							<form action='{% url "cool_app:poke" %}' method="POST">
-								{% csrf_token %}
-								<input type="hidden" value="{{user.id}}" name="pokee">
-								<input type="hidden" value="{{request.session.user.id}}" name="poker">
-								<input type="submit" value="Poke me!">
-							</form>
-						</td>
+						<td><a href='{% url "cool_app:wish_items" item_id=item.id%}'>{{ item.name }}</a></td>
+						<td>{{ item.created_by.name }}</td> 
+						<td>{{ item.created_at }}</td>
+						{% if item.created_by.id == request.session.user.id %}
+							<td><a href='{% url "cool_app:delete_item" item_id=item.id %}'>Delete from Products</a></td>
+						{% endif %}	
+						{% if item.created_by.id != request.session.user.id %}
+							<td><a href='{% url "cool_app:remove_list" item_id=index.id %}'>Remove from Wishlist</a></td>
+						{% endif %}
 					</tr>
-				{% endif %}	
-			{% endfor %} 	
-		{% endfor %} 
-
-		</table>
-
+				{% endif %}
+			{% endfor %}		
+		{% endfor %}
+	</table>
+	<table>	
+		<h2>Other Users' Wish List:</h2>
+		<tr>
+			<th>Item</th>
+			<th>Added by</th> 
+			<th>Date Added</th>
+			<th>Action</th>
+		</tr>
+		{% for item in not_on_wishlist %}
+		<tr>
+			<td><a href='{% url "cool_app:wish_items" item_id=item.id%}'>{{ item.name }}</a></td>
+			<td>{{ item.created_by.name }}</td> 
+			<td>{{ item.created_at }}</td>
+			<td><a href='{% url "cool_app:add_item" item_id=item.id %}'>Add to Wishlist</a></td>
+		</tr>
+		{% endfor %}
+	</table>	
+	<a href='{% url "cool_app:create" %}'>Add Item</a>
 </body>
 </html>

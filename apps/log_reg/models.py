@@ -10,8 +10,6 @@ import time
 class UserManager(models.Manager):
 	def reg_check(self, postData):
 
-		EMAIL_REGEX = re.compile(r'^[a-zA-Z0-9.+_-]+@[a-zA-Z0-9._-]+\.[a-zA-Z]+$')
-		# checks for a valid email format: email@email.com
 
 		name_match = r'^[a-zA-Z]+$'	
 		# accepts only alpha characters in a name
@@ -19,38 +17,24 @@ class UserManager(models.Manager):
 		pass_require = r'(?=.*[A-Z]+)(?=.*[0-9]+)'
 		# password requires at least one upper case letter and one number
 
-		iso_birthdate_match = r'^(19|20)\d{2}\-(0[1-9]|1[0-2])\-(0[1-9]|1\d|2\d|3[01])$'
+		iso_hiredate_match = r'^(19|20)\d{2}\-(0[1-9]|1[0-2])\-(0[1-9]|1\d|2\d|3[01])$'
 
-		alt_birthdate_match = r'^(0[1-9]|1[0-2])\/(0[1-9]|1\d|2\d|3[01])\/(19|20)\d{2}$'
+		alt_hiredate_match = r'^(0[1-9]|1[0-2])\/(0[1-9]|1\d|2\d|3[01])\/(19|20)\d{2}$'
 
 		iso_current_date = (time.strftime("%Y-%m-%d"))
 
-		birthdate = postData['birthdate']
+		hiredate = postData['hiredate']
 
 		error_messages = []
 
-		if len(postData['name']) < 2:
-			error_messages.append('Name must contain at least 2 characters!')
+		if len(postData['name']) < 3:
+			error_messages.append('Name must contain at least 3 characters!')
 			
 		if not re.search(name_match, postData['name']):
 			error_messages.append('Name must have only letters!')
 			
-		if len(postData['alias']) < 2:
-			error_messages.append('Alias must contain at least 2 characters!')
-			
-		if not re.search(name_match, postData['alias']):
-			error_messages.append('Alias must have only letters!')
-				
-		if not postData['email']:
-			error_messages.append('Email address is required!')
-			
-		if not EMAIL_REGEX.match(postData['email']):
-			error_messages.append('Email address needs to be in a valid format!')
-
-		else:
-			email_check = self.filter(email=postData['email'])
-			if email_check:
-				error_messages.append('Email address is already in the database!')	
+		if len(postData['username']) < 3:
+			error_messages.append('Username must contain at least 3 characters!')
 			
 		if not postData['password']:
 			error_messages.append("Password cannot be blank! Password must be at least 8 characters and contain at least 1 capital letter and 1 number!")
@@ -65,22 +49,22 @@ class UserManager(models.Manager):
 		if postData['confirm_password'] != postData['password']:
 			error_messages.append("Confirm password and password must match!")
 
-		if not postData['birthdate']:
-			error_messages.append("Birthdate must be entered!")
+		if not postData['hiredate']:
+			error_messages.append("Hire date must be entered!")
 
-		if re.search(iso_birthdate_match, postData['birthdate']):	
+		if re.search(iso_hiredate_match, postData['hiredate']):	
 
-			if postData['birthdate'] > iso_current_date:
-				error_messages.append("Birthdate cannot be after today's date!")
+			if postData['hiredate'] > iso_current_date:
+				error_messages.append("Hire date cannot be after today's date!")
 			
-		elif re.search(alt_birthdate_match, postData['birthdate']):	
+		elif re.search(alt_hiredate_match, postData['hiredate']):	
 
-			birthdate = datetime.date(int(birthdate[6:]), int(birthdate[:2]), int(birthdate[3:-5])).isoformat()
-			if birthdate > iso_current_date:
-				error_messages.append("Birthdate cannot be after today's date!")
+			hiredate = datetime.date(int(hiredate[6:]), int(hiredate[:2]), int(hiredate[3:-5])).isoformat()
+			if hiredate > iso_current_date:
+				error_messages.append("Hire date cannot be after today's date!")
 
 		else:
-			error_messages.append("Birthdate must be entered in format of MM/DD/YYYY!")	
+			error_messages.append("Hire date must be entered in format of MM/DD/YYYY!")	
 					
 		response = {}				
 
@@ -90,7 +74,7 @@ class UserManager(models.Manager):
 
 		else:
 			pw_hash = bcrypt.hashpw(postData['password'].encode(), bcrypt.gensalt())
-			new_user = self.create(email=postData['email'],name=postData['name'],alias=postData['alias'],birthdate=postData['birthdate'],pw_hash=pw_hash)
+			new_user = self.create(name=postData['name'],username=postData['username'],hiredate=postData['hiredate'],pw_hash=pw_hash)
 			response['created'] = True
 			response['new_user'] = new_user
 
@@ -99,16 +83,16 @@ class UserManager(models.Manager):
 	def login_check(self, postData):
 
 		error_messages = []
-		email_check = User.objects.filter(email=postData['email'])
+		username_check = User.objects.filter(username=postData['username'])
 		response = {}
 
-		if not email_check:
-			error_messages.append("Email does not exist in system! Please register!")
+		if not username_check:
+			error_messages.append("username does not exist in system! Please register!")
 			response['login'] = False
 		else:
-			if bcrypt.hashpw(postData['password'].encode(), email_check[0].pw_hash.encode()) == email_check[0].pw_hash:
+			if bcrypt.hashpw(postData['password'].encode(), username_check[0].pw_hash.encode()) == username_check[0].pw_hash:
 				response['login'] = True
-				response['user'] = email_check[0]
+				response['user'] = username_check[0]
 			else:	
 				error_messages.append("Password is invalid!")
 				response['login'] = False
@@ -119,9 +103,8 @@ class UserManager(models.Manager):
 						
 class User(models.Model):
 	name=models.CharField(max_length=100)
-	alias=models.CharField(max_length=100)
-	email=models.CharField(max_length=100)
-	birthdate = models.CharField(max_length=10)
+	username=models.CharField(max_length=100)
+	hiredate = models.CharField(max_length=10)
 	pw_hash=models.CharField(max_length=255)
 	created_at = models.DateTimeField(auto_now_add = True)
 	objects = UserManager()
